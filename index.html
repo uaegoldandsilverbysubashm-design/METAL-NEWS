@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4f1ea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Metals & Commodities Intelligence</title>
+<style>
+  /* ---------- THEMES ---------- */
+  :root, [data-theme="light"] {
+    --bg: #f4f1ea;
+    --card: #ffffff;
+    --card-alt: #faf8f3;
+    --border: #e1dccf;
+    --text: #1f2933;
+    --muted: #6b7280;
+    --accent: #0f766e;
+    --accent-soft: rgba(15,118,110,0.10);
+    --accent-text: #ffffff;
+    --gold: #b7791f;
+    --bull: #15803d;
+    --bear: #b91c1c;
+    --neutral: #a16207;
+    --sideways: #1d4ed8;
+    --copper: #9a5b22;
+    --shadow: 0 1px 3px rgba(31,41,51,0.08);
+    --radius: 12px;
+    --gap: 16px;
+  }
+  [data-theme="dark"] {
+    --bg: #0b1514;
+    --card: #12201f;
+    --card-alt: #0f1b1a;
+    --border: #234240;
+    --text: #e8f1ef;
+    --muted: #8fa9a5;
+    --accent: #2dd4bf;
+    --accent-soft: rgba(45,212,191,0.12);
+    --accent-text: #04201d;
+    --gold: #fbbf24;
+    --bull: #4ade80;
+    --bear: #f87171;
+    --neutral: #facc15;
+    --sideways: #60a5fa;
+    --copper: #e0955a;
+    --shadow: none;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    transition: background 0.2s, color 0.2s;
+  }
+  .container { width: 100%; max-width: 1400px; margin: 0 auto; }
+
+  /* ---------- HEADER ---------- */
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(1.05rem, 4vw, 1.6rem);
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    word-break: break-word;
+  }
+  h1 .mark { color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .status {
+    font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+    color: var(--muted);
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--bull); animation: pulse 2s infinite; flex-shrink: 0;
+  }
+  .dot.err { background: var(--bear); animation: none; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .theme-btn { padding: 7px 12px; border-radius: 20px; }
+
+  /* ---------- VIEW TABS ---------- */
+  .view-tabs {
+    display: flex; gap: 0; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
+  }
+  .view-tabs::-webkit-scrollbar { display: none; }
+  .view-tab {
+    padding: 12px clamp(12px, 3vw, 24px);
+    background: transparent; border: none; border-radius: 0;
+    color: var(--muted); cursor: pointer;
+    font-size: clamp(0.85rem, 2.7vw, 0.95rem); font-weight: 600; font-family: inherit;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .view-tab:hover { color: var(--text); border-color: transparent; border-bottom-color: var(--border); }
+  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ---------- SETTINGS ---------- */
+  .settings {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .settings-header {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 12px 14px; cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .settings-header:hover { background: var(--accent-soft); }
+  .settings-title {
+    display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--accent);
+    font-size: clamp(0.8rem, 2.6vw, 0.9rem); flex: 1; min-width: 0;
+  }
+  .settings-toggle {
+    display: flex; align-items: center; gap: 6px;
+    font-size: clamp(0.65rem, 2.2vw, 0.75rem); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+  }
+  .settings-toggle .chevron { transition: transform 0.25s; display: inline-block; }
+  .settings-header.open .chevron { transform: rotate(180deg); }
+  .settings-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+    padding: 0 14px; border-top: 0 solid var(--border);
+  }
+  .settings-body.open { max-height: 2400px; padding: 14px; border-top: 1px solid var(--border); }
+  .settings-note {
+    background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent);
+    padding: 10px 12px; border-radius: 8px;
+    font-size: clamp(0.72rem, 2.4vw, 0.78rem); margin-bottom: 14px; line-height: 1.4;
+  }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 12px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label {
+    font-size: clamp(0.68rem, 2.3vw, 0.78rem); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.4px; word-break: break-word;
+  }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px; background: var(--card-alt);
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    font-size: 16px; font-family: inherit; min-width: 0;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field small { color: var(--muted); font-size: clamp(0.65rem, 2.2vw, 0.7rem); }
+  .settings-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .source-list {
+    margin-top: 12px; max-height: 240px; overflow-y: auto;
+    background: var(--card-alt); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px;
+    font-size: clamp(0.7rem, 2.3vw, 0.78rem); columns: 2; column-gap: 16px;
+  }
+  .source-item { color: var(--muted); padding: 2px 0; break-inside: avoid; }
+  .source-item .tag {
+    display: inline-block; padding: 0 6px; border-radius: 6px;
+    font-size: 0.65rem; background: var(--accent-soft); color: var(--accent); margin-left: 4px;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    align-items: center; justify-content: space-between;
+  }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
+  .tab {
+    padding: 6px 12px; border-radius: 20px; background: var(--card);
+    border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+    font-size: clamp(0.75rem, 2.4vw, 0.85rem); transition: all 0.2s;
+    white-space: nowrap; user-select: none;
+  }
+  .tab:hover { color: var(--text); border-color: var(--accent); }
+  .tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button {
+    padding: 9px 14px; border-radius: 8px; background: var(--card);
+    border: 1px solid var(--border); color: var(--text); cursor: pointer;
+    font-size: clamp(0.75rem, 2.4vw, 0.85rem); font-family: inherit;
+    transition: all 0.15s; white-space: nowrap; touch-action: manipulation;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.newest { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+  button.newest.active { background: var(--accent); color: var(--accent-text); }
+  .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+
+  /* ---------- SORT BAR ---------- */
+  .sortbar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 10px 12px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 16px;
+    font-size: clamp(0.72rem, 2.4vw, 0.82rem); color: var(--muted);
+    box-shadow: var(--shadow);
+  }
+  .sortbar select {
+    padding: 8px 10px; background: var(--card-alt); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 16px; font-family: inherit;
+    cursor: pointer; max-width: 100%;
+  }
+  .sortbar select:focus { outline: none; border-color: var(--accent); }
+  .dir-btn { display: flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; background: var(--card-alt); }
+  .dir-btn .arrow { font-size: 1rem; line-height: 1; }
+  .dir-summary { margin-left: auto; font-size: clamp(0.68rem, 2.2vw, 0.75rem); }
+
+  /* ---------- STATS ---------- */
+  .stats {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-size: clamp(0.7rem, 2.3vw, 0.8rem); color: var(--muted);
+    margin-bottom: 16px; padding: 10px 14px; background: var(--card);
+    border-radius: 10px; border: 1px solid var(--border); word-break: break-word;
+    box-shadow: var(--shadow);
+  }
+  .stats strong { color: var(--accent); }
+  .stats .newest-info { color: var(--bull); font-weight: 600; }
+
+  /* ---------- GRID ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: var(--gap);
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    display: flex; flex-direction: column; position: relative;
+    min-width: 0; word-break: break-word; box-shadow: var(--shadow);
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  @media (hover: none) { .card:hover { transform: none; } }
+  .card.fresh { border-color: var(--bull); }
+  .card.fresh::before {
+    content: "NEW"; position: absolute; top: -8px; right: 12px;
+    background: var(--bull); color: #fff; font-size: 0.6rem; font-weight: 700;
+    padding: 2px 6px; border-radius: 8px; letter-spacing: 0.5px;
+  }
+  .card .source {
+    font-size: clamp(0.66rem, 2.2vw, 0.72rem); text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--accent); margin-bottom: 6px; font-weight: 700;
+  }
+  .card h3 { font-size: clamp(0.9rem, 2.9vw, 1rem); margin-bottom: 8px; line-height: 1.35; }
+  .card h3 a { color: var(--text); text-decoration: none; }
+  .card h3 a:hover { color: var(--accent); }
+  .card p {
+    font-size: clamp(0.78rem, 2.5vw, 0.85rem); color: var(--muted);
+    flex-grow: 1; margin-bottom: 12px;
+  }
+  .card .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: clamp(0.68rem, 2.2vw, 0.75rem); color: var(--muted);
+    border-top: 1px solid var(--border); padding-top: 10px; gap: 8px; flex-wrap: wrap;
+  }
+  .card .meta .time { color: var(--gold); font-weight: 600; }
+  .badge {
+    padding: 2px 8px; border-radius: 10px; font-size: clamp(0.62rem, 2vw, 0.7rem);
+    font-weight: 600; text-transform: uppercase; white-space: nowrap;
+  }
+  .badge.bull { background: color-mix(in srgb, var(--bull) 15%, transparent); color: var(--bull); }
+  .badge.bear { background: color-mix(in srgb, var(--bear) 15%, transparent); color: var(--bear); }
+  .badge.neutral { background: color-mix(in srgb, var(--neutral) 15%, transparent); color: var(--neutral); }
+  .badge.sideways { background: color-mix(in srgb, var(--sideways) 15%, transparent); color: var(--sideways); }
+  .badge.metal { background: color-mix(in srgb, var(--gold) 15%, transparent); color: var(--gold); }
+  .badge.copper { background: color-mix(in srgb, var(--copper) 15%, transparent); color: var(--copper); }
+  .badge.oil { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); }
+  .badge.dupe { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); margin-left: 6px; font-size: 0.65rem; }
+  .loading, .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: clamp(0.85rem, 2.7vw, 1rem); }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error {
+    background: color-mix(in srgb, var(--bear) 10%, transparent);
+    border: 1px solid var(--bear); color: var(--bear);
+    padding: 12px 14px; border-radius: 10px; margin-bottom: 16px;
+    font-size: clamp(0.78rem, 2.5vw, 0.85rem); word-break: break-word;
+  }
+  .notice {
+    background: color-mix(in srgb, var(--neutral) 10%, transparent);
+    border: 1px solid var(--neutral); color: var(--neutral);
+    padding: 10px 14px; border-radius: 10px; margin-bottom: 16px;
+    font-size: clamp(0.72rem, 2.4vw, 0.8rem); word-break: break-word;
+  }
+  .source-badge {
+    display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 0.65rem;
+    background: color-mix(in srgb, var(--muted) 14%, transparent); color: var(--muted);
+    margin-left: 6px; text-transform: none; letter-spacing: 0; font-weight: 500;
+  }
+
+  /* ---------- TOAST ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px); opacity: 0;
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 24px;
+    font-size: 0.85rem; pointer-events: none; transition: all 0.25s; z-index: 50;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- ECONOMIC CALENDAR ---------- */
+  .ecw-container {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; min-height: 600px; width: 100%;
+    box-shadow: var(--shadow);
+  }
+  #economicCalendarWidget {
+    width: 100%; min-height: 600px; height: 85vh; max-height: 1200px;
+    background: #fff; overflow: hidden; position: relative;
+  }
+  #economicCalendarWidget iframe {
+    width: 100% !important; height: 100% !important; min-height: 600px !important;
+    border: 0; display: block;
+  }
+  .ecw-copyright {
+    text-align: center; padding: 8px 14px; background: var(--card);
+    border-top: 1px solid var(--border); font-size: clamp(0.68rem, 2.3vw, 0.75rem);
+  }
+  .ecw-copyright a { color: var(--accent); text-decoration: none; font-weight: 500; overflow-wrap: anywhere; }
+  .ecw-copyright a:hover { text-decoration: underline; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .grid { grid-template-columns: 1fr; }
+    .controls { flex-direction: column; align-items: stretch; }
+    .action-buttons { width: 100%; }
+    .action-buttons button { flex: 1; }
+    .sortbar { gap: 6px; }
+    .dir-summary { width: 100%; margin-left: 0; }
+    .source-list { columns: 1; }
+    .card { padding: 12px; }
+    #economicCalendarWidget { height: 75vh; min-height: 500px; }
+  }
+  @media (min-width: 481px) and (max-width: 900px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  }
+  @media (min-width: 1600px) {
+    .container { max-width: 1600px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+  }
+  @media (max-height: 500px) and (orientation: landscape) {
+    body { padding: 10px; }
+    .settings-body.open { max-height: 3000px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    button, .tab, .view-tab, .settings-header { min-height: 40px; }
+    .tab { padding: 8px 14px; }
+  }
+  img, table, pre, code { max-width: 100%; }
+  .card h3 a { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span class="mark">◆</span> Metals & Commodities Intelligence</h1>
+    <div class="header-right">
+      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Ready</span></div>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle theme">🌙 Dark</button>
+    </div>
+  </header>
+
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="news" onclick="switchView('news')">📰 News Feed</button>
+    <button class="view-tab" data-view="calendar" onclick="switchView('calendar')">📅 Economic Calendar</button>
+  </div>
+
+  <!-- NEWS VIEW -->
+  <div class="view active" id="view-news">
+    <div class="settings">
+      <div class="settings-header" id="settingsHeader" onclick="toggleSettings()">
+        <div class="settings-title"><span>⚙️ Display, Behavior & Sources</span></div>
+        <div class="settings-toggle"><span id="toggleLabel">Show</span><span class="chevron">▼</span></div>
+      </div>
+      <div class="settings-body" id="settingsBody">
+        <div class="settings-note">
+          ✅ <strong>Zero-config · no API keys:</strong> free public RSS feeds. Each feed is tried through a JSON converter first and the CORS proxy only if that fails. <strong>Newest news is shown first.</strong>
+        </div>
+        <div class="settings-grid">
+          <div class="field">
+            <label for="dupeThreshold">Duplicate Detection Threshold</label>
+            <input type="number" id="dupeThreshold" value="0.72" min="0.5" max="1" step="0.01" inputmode="decimal">
+            <small>0.5 = loose · 0.9 = strict</small>
+          </div>
+          <div class="field">
+            <label for="refreshMin">Auto-refresh (minutes)</label>
+            <input type="number" id="refreshMin" value="5" min="0" inputmode="numeric">
+            <small>0 = disabled</small>
+          </div>
+          <div class="field">
+            <label for="corsProxy">CORS Proxy (RSS fallback)</label>
+            <input type="text" id="corsProxy" value="https://corsproxy.io/?" autocomplete="off" autocapitalize="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="sourceSet">Source Set</label>
+            <select id="sourceSet">
+              <option value="all">All sources</option>
+              <option value="core">Core metals &amp; mining</option>
+              <option value="minimal">Minimal (5 fastest)</option>
+            </select>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="primary" onclick="saveSettings()">💾 Save Settings</button>
+          <button onclick="resetSettings()">🔄 Reset to Defaults</button>
+        </div>
+        <details style="margin-top:14px;">
+          <summary style="cursor:pointer; color:var(--accent); font-size:0.85rem; user-select:none;">📋 View all sources</summary>
+          <div class="source-list" id="sourceListPreview"></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-filter="all">All</div>
+        <div class="tab" data-filter="gold">Gold</div>
+        <div class="tab" data-filter="silver">Silver</div>
+        <div class="tab" data-filter="platinum">Platinum</div>
+        <div class="tab" data-filter="palladium">Palladium</div>
+        <div class="tab" data-filter="copper">Copper</div>
+        <div class="tab" data-filter="mining">Mining</div>
+        <div class="tab" data-filter="oil">Oil & Energy</div>
+        <div class="tab" data-filter="macro">Macro</div>
+      </div>
+      <div class="action-buttons">
+        <button class="newest active" id="newestBtn" onclick="setNewestFirst()">🕐 Newest First</button>
+        <button class="primary" id="refreshBtn" onclick="loadAll()">↻ Refresh</button>
+        <button onclick="exportJSON()">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="sortbar">
+      <span>Sort by:</span>
+      <select id="sortField" onchange="onSortChange()" aria-label="Sort field">
+        <option value="date" selected>Date</option>
+        <option value="source">Source</option>
+        <option value="sentiment">Sentiment</option>
+        <option value="title">Title</option>
+      </select>
+      <button class="dir-btn" id="dirBtn" onclick="toggleDirection()">
+        <span class="arrow" id="dirArrow">↓</span>
+        <span id="dirLabel">Newest first</span>
+      </button>
+      <span class="dir-summary">Direction: <strong id="dirSummary" style="color:var(--bull);">DESC · NEWEST</strong></span>
+    </div>
+
+    <div class="stats" id="stats" style="display:none;"></div>
+    <div id="errorBox"></div>
+    <div id="noticeBox"></div>
+    <div id="newsGrid" class="grid"></div>
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <div id="loadingText">Fetching from all sources...</div>
+    </div>
+    <div id="empty" class="empty" style="display:none;">No articles found for this filter.</div>
+  </div>
+
+  <!-- CALENDAR VIEW (widget loaded lazily when tab first opened) -->
+  <div class="view" id="view-calendar">
+    <div class="ecw-container">
+      <div id="economicCalendarWidget"></div>
+      <div class="ecw-copyright">
+        <a href="https://www.metatrader.com/?utm_source=calendar.widget&utm_medium=link&utm_term=economic.calendar&utm_content=visit.mql5.calendar&utm_campaign=202.calendar.widget" rel="noopener nofollow" target="_blank">MetaTrader World Markets</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   SAFE STORAGE (private mode / blocked storage won't crash)
+   ============================================================ */
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function applyTheme(name) {
+  document.documentElement.setAttribute("data-theme", name);
+  document.getElementById("themeBtn").textContent = name === "dark" ? "☀️ Light" : "🌙 Dark";
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", name === "dark" ? "#0b1514" : "#f4f1ea");
+}
+function toggleTheme() {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  store.set("metalsNewsTheme", next);
+  applyTheme(next);
+}
+
+/* ============================================================
+   VIEW SWITCHING
+   ============================================================ */
+let calendarLoaded = false;
+function loadCalendarWidget() {
+  if (calendarLoaded) return;
+  calendarLoaded = true;
+  const s = document.createElement("script");
+  s.async = true;
+  s.type = "text/javascript";
+  s.setAttribute("data-type", "calendar-widget");
+  s.src = "https://www.tradays.com/c/js/widgets/calendar/widget.js?v=15";
+  s.textContent = JSON.stringify({ width: "100%", height: "100%", mode: "1", fw: "html", lang: "en" });
+  document.getElementById("view-calendar").appendChild(s);
+}
+function switchView(name) {
+  document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelector(`.view-tab[data-view="${name}"]`).classList.add("active");
+  document.getElementById("view-" + name).classList.add("active");
+  store.set("metalsNewsView", name);
+  if (name === "calendar") loadCalendarWidget();
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+const SETTINGS_KEY = "metalsNewsSettings";
+const PANEL_STATE_KEY = "metalsNewsPanelOpen";
+const DEFAULT_SETTINGS = { dupeThreshold: 0.72, refreshMin: 5, corsProxy: "https://corsproxy.io/?", sourceSet: "all" };
+
+function toggleSettings() {
+  const header = document.getElementById("settingsHeader");
+  const body = document.getElementById("settingsBody");
+  const isOpen = body.classList.toggle("open");
+  header.classList.toggle("open", isOpen);
+  document.getElementById("toggleLabel").textContent = isOpen ? "Hide" : "Show";
+  store.set(PANEL_STATE_KEY, isOpen ? "1" : "0");
+}
+function getSettings() {
+  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(store.get(SETTINGS_KEY) || "{}") }; }
+  catch { return { ...DEFAULT_SETTINGS }; }
+}
+function loadSettings() {
+  const s = getSettings();
+  document.getElementById("dupeThreshold").value = s.dupeThreshold;
+  document.getElementById("refreshMin").value = s.refreshMin;
+  document.getElementById("corsProxy").value = s.corsProxy;
+  document.getElementById("sourceSet").value = s.sourceSet;
+}
+function saveSettings() {
+  const thr = parseFloat(document.getElementById("dupeThreshold").value);
+  const ref = parseInt(document.getElementById("refreshMin").value, 10);
+  const s = {
+    dupeThreshold: isNaN(thr) ? DEFAULT_SETTINGS.dupeThreshold : Math.min(1, Math.max(0.5, thr)),
+    refreshMin: isNaN(ref) ? 0 : Math.max(0, ref),
+    corsProxy: document.getElementById("corsProxy").value.trim() || DEFAULT_SETTINGS.corsProxy,
+    sourceSet: document.getElementById("sourceSet").value
+  };
+  store.set(SETTINGS_KEY, JSON.stringify(s));
+  setupAutoRefresh();
+  toast("Settings saved ✓ — refreshing");
+  loadAll();
+}
+function resetSettings() {
+  if (!confirm("Reset all settings to defaults?")) return;
+  store.del(SETTINGS_KEY);
+  loadSettings();
+  setupAutoRefresh();
+  toast("Settings reset");
+  loadAll();
+}
+
+/* ============================================================
+   RSS SOURCES
+   ============================================================ */
+const RSS_SOURCES = {
+  core: [
+    { name: "Kitco News", url: "https://www.kitco.com/rss/kitco-news.xml", cat: "gold" },
+    { name: "GoldSeek", url: "https://news.goldseek.com/goldseek.rss", cat: "gold" },
+    { name: "SilverSeek", url: "https://news.silverseek.com/silverseek.rss", cat: "silver" },
+    { name: "BullionVault", url: "https://www.bullionvault.com/gold-news/rss", cat: "gold" },
+    { name: "Mining.com", url: "https://www.mining.com/feed/", cat: "mining" },
+    { name: "Gold-Eagle", url: "https://www.gold-eagle.com/rss.xml", cat: "gold" },
+    { name: "FXStreet News", url: "https://www.fxstreet.com/rss/news", cat: "macro" },
+    { name: "Mining Weekly", url: "https://www.miningweekly.com/rss", cat: "mining" },
+    { name: "Northern Miner", url: "https://www.northernminer.com/feed/", cat: "mining" },
+    { name: "Mining.com Junior", url: "https://www.mining.com/category/junior-mining/feed/", cat: "mining" },
+    { name: "Resource World", url: "https://resourceworld.com/feed/", cat: "mining" },
+    { name: "Investing News Gold", url: "https://investingnews.com/category/daily/resource-investing/precious-metals-investing/gold-investing/feed/", cat: "gold" },
+    { name: "Investing News Silver", url: "https://investingnews.com/category/daily/resource-investing/precious-metals-investing/silver-investing/feed/", cat: "silver" },
+    { name: "Copper Investing News", url: "https://investingnews.com/category/daily/resource-investing/base-metals-investing/copper-investing/feed/", cat: "copper" },
+    { name: "MetalMiner", url: "https://agmetalminer.com/feed/", cat: "copper" },
+  ],
+  extended: [
+    { name: "CNBC Markets", url: "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664", cat: "macro" },
+    { name: "MarketWatch Top Stories", url: "https://feeds.marketwatch.com/marketwatch/topstories/", cat: "macro" },
+    { name: "Seeking Alpha Currents", url: "https://seekingalpha.com/market_currents.xml", cat: "macro" },
+    { name: "OilPrice.com", url: "https://oilprice.com/rss/main", cat: "oil" },
+    { name: "Rigzone", url: "https://www.rigzone.com/news/rss/rigzone_latest.aspx", cat: "oil" },
+    { name: "Energy Voice", url: "https://www.energyvoice.com/feed/", cat: "oil" },
+    { name: "Federal Reserve", url: "https://www.federalreserve.gov/feeds/press_all.xml", cat: "macro" },
+    { name: "ECB Press", url: "https://www.ecb.europa.eu/rss/press.html", cat: "macro" },
+    { name: "IMF Blog", url: "https://www.imf.org/en/Blogs/rss", cat: "macro" },
+    { name: "ZeroHedge", url: "https://feeds.feedburner.com/zerohedge/feed", cat: "macro" },
+    { name: "Calculated Risk", url: "https://feeds.feedburner.com/CalculatedRisk", cat: "macro" },
+    { name: "CoinDesk", url: "https://www.coindesk.com/arc/outboundfeeds/rss/", cat: "macro" },
+    { name: "CoinTelegraph", url: "https://cointelegraph.com/rss", cat: "macro" },
+  ]
+};
+function getFeeds() {
+  const set = getSettings().sourceSet;
+  if (set === "minimal") return RSS_SOURCES.core.slice(0, 5);
+  if (set === "core") return [...RSS_SOURCES.core];
+  return [...RSS_SOURCES.core, ...RSS_SOURCES.extended];
+}
+function renderSourcePreview() {
+  document.getElementById("sourceListPreview").innerHTML =
+    [...RSS_SOURCES.core, ...RSS_SOURCES.extended]
+      .map(f => `<div class="source-item">• ${escapeHTML(f.name)}<span class="tag">${f.cat}</span></div>`).join("");
+}
+
+/* ============================================================
+   TAGGING (word-boundary matching — fixes "more" => ore, "bright" => rig, etc.)
+   ============================================================ */
+const METAL_KEYWORDS = {
+  gold: ["gold", "xau", "bullion"],
+  silver: ["silver", "xag"],
+  platinum: ["platinum", "xpt"],
+  palladium: ["palladium", "xpd"],
+  copper: ["copper"],
+  mining: ["mine", "mines", "miner", "miners", "mining", "drill", "drilling", "exploration", "ore", "deposit", "assay", "gold project", "smelter"],
+  oil: ["oil", "crude", "opec", "brent", "wti", "refinery", "petroleum", "natural gas", "lng", "rig count"],
+  macro: ["fed", "federal reserve", "dollar", "dxy", "inflation", "cpi", "ppi", "ecb", "yield", "yields", "interest rate", "interest rates", "rate cut", "rate hike", "treasury", "fomc", "gdp", "payrolls"]
+};
+const METAL_REGEX = {};
+for (const [cat, keys] of Object.entries(METAL_KEYWORDS)) {
+  METAL_REGEX[cat] = new RegExp("\\b(?:" + keys.map(k => k.replace(/\s+/g, "\\s+")).join("|") + ")\\b", "i");
+}
+function tagMetals(text) {
+  const tags = [];
+  for (const [cat, re] of Object.entries(METAL_REGEX)) if (re.test(text || "")) tags.push(cat);
+  return tags.length ? tags : ["macro"];
+}
+
+/* ============================================================
+   SENTIMENT (word-boundary)
+   ============================================================ */
+const BULL_RE = /\b(rises?|rising|rall(?:y|ies|ied)|gains?|gained|surg(?:e|es|ed|ing)|climbs?|climbed|higher|boosts?|bullish|jumps?|soars?|advances?|recovers?|record|breakout)\b/gi;
+const BEAR_RE = /\b(falls?|falling|fell|drops?|dropped|slips?|slipped|declines?|declined|slides?|slid|lower|pressure|bearish|plunges?|tumbles?|loses?|losses|retreats?|weakens?|crash(?:es|ed)?)\b/gi;
+function guessSentiment(title, desc) {
+  const text = (title || "") + " " + (desc || "");
+  const b = (text.match(BULL_RE) || []).length;
+  const s = (text.match(BEAR_RE) || []).length;
+  if (b > s) return "bull";
+  if (s > b) return "bear";
+  if (/\b(range|steady|flat|sideways|consolidat\w*)\b/i.test(text)) return "sideways";
+  return "neutral";
+}
+
+/* ============================================================
+   FETCHERS (with timeouts + proxy only as fallback)
+   ============================================================ */
+function cleanHTML(html) {
+  const d = new DOMParser().parseFromString(html || "", "text/html");
+  return (d.body.textContent || "").replace(/\s+/g, " ").trim();
+}
+function parseDateSafe(input) {
+  if (!input) return 0;
+  const t = new Date(input).getTime();
+  if (!isNaN(t)) return Math.min(t, Date.now()); // clamp future dates
+  const m = String(input).match(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})/);
+  if (m) { const t2 = Date.parse(m[0].replace(" ", "T") + "Z"); if (!isNaN(t2)) return Math.min(t2, Date.now()); }
+  return 0;
+}
+function safeURL(u) {
+  try { const x = new URL(u, location.href); return /^https?:$/.test(x.protocol) ? x.href : "#"; }
+  catch { return "#"; }
+}
+async function fetchWithTimeout(url, ms = 9000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: ctl.signal });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res;
+  } finally { clearTimeout(t); }
+}
+function buildArticle(feed, title, desc, link, pub) {
+  const d = cleanHTML(desc).slice(0, 220);
+  return {
+    title: cleanHTML(title), description: d, source: feed.name, cat: feed.cat,
+    pubDate: pub, _ts: parseDateSafe(pub), link: safeURL(link),
+    metals: tagMetals(title + " " + d), sentiment: guessSentiment(title, d)
+  };
+}
+async function viaRss2Json(feed) {
+  const res = await fetchWithTimeout("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(feed.url));
+  const data = await res.json();
+  if (data.status !== "ok" || !Array.isArray(data.items) || !data.items.length) throw new Error("Bad feed");
+  return data.items.map(i => buildArticle(feed, i.title, i.description || i.content, i.link, i.pubDate));
+}
+async function viaProxy(feed, proxy) {
+  const res = await fetchWithTimeout(proxy + encodeURIComponent(feed.url));
+  const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
+  if (xml.querySelector("parsererror")) throw new Error("XML parse error");
+  const items = Array.from(xml.querySelectorAll("item, entry")).slice(0, 30);
+  if (!items.length) throw new Error("No items");
+  return items.map(it => {
+    const q = s => it.querySelector(s);
+    const linkEl = q("link");
+    const link = linkEl?.getAttribute("href") || linkEl?.textContent || "#";
+    return buildArticle(
+      feed, q("title")?.textContent || "",
+      q("description, summary, content")?.textContent || "",
+      link.trim(), q("pubDate, published, updated")?.textContent || ""
+    );
+  });
+}
+async function fetchFeed(feed, proxy) {
+  try { return await viaRss2Json(feed); }
+  catch (e1) {
+    try { return await viaProxy(feed, proxy); }
+    catch (e2) { console.warn(`[${feed.name}] ${e1.message} / ${e2.message}`); return null; }
+  }
+}
+
+/* ============================================================
+   DEDUPLICATION
+   ============================================================ */
+const STOP_RE = /\b(the|a|an|and|or|of|to|in|on|for|with|by|from|as|at|is|are|was|were|be|been|being|this|that|these|those|it|its)\b/g;
+function normalizeTitle(t) {
+  return (t || "").toLowerCase().replace(/[^\w\s]/g, " ").replace(STOP_RE, " ").replace(/\s+/g, " ").trim();
+}
+function bigrams(s) { const a = []; for (let i = 0; i < s.length - 1; i++) a.push(s.slice(i, i + 2)); return a; }
+function dice(a, b) {
+  const A = bigrams(a), B = bigrams(b);
+  if (!A.length || !B.length) return 0;
+  const map = new Map();
+  A.forEach(g => map.set(g, (map.get(g) || 0) + 1));
+  let inter = 0;
+  B.forEach(g => { if (map.get(g) > 0) { inter++; map.set(g, map.get(g) - 1); } });
+  return (2 * inter) / (A.length + B.length);
+}
+function jaccard(a, b) {
+  const A = new Set(a), B = new Set(b);
+  if (!A.size || !B.size) return 0;
+  let i = 0; for (const x of A) if (B.has(x)) i++;
+  return i / (A.size + B.size - i);
+}
+function normalizeURL(u) {
+  try {
+    const url = new URL(u);
+    ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","fbclid","gclid","ref","source"].forEach(p => url.searchParams.delete(p));
+    const qs = url.searchParams.toString();
+    return url.host.replace(/^www\./, "") + url.pathname.replace(/\/$/, "") + (qs ? "?" + qs : "");
+  } catch { return (u || "").toLowerCase().replace(/[?#].*$/, "").replace(/\/$/, ""); }
+}
+function areDuplicates(a, b, thr) {
+  if (a._normURL && a._normURL !== "#" && a._normURL === b._normURL) return "url";
+  if (!a._nt || !b._nt) return null;
+  if (a._nt === b._nt) return "exact";
+  if (dice(a._nt, b._nt) >= thr) return "dice";
+  if (jaccard(a._tok, b._tok) >= Math.min(1, thr + 0.05)) return "jaccard";
+  const shorter = a._nt.length < b._nt.length ? a._nt : b._nt;
+  const longer = a._nt.length < b._nt.length ? b._nt : a._nt;
+  if (shorter.length > 25 && longer.includes(shorter)) return "substring";
+  return null;
+}
+function deduplicate(articles, thr) {
+  articles.forEach(a => {
+    a._normURL = normalizeURL(a.link);
+    a._nt = normalizeTitle(a.title);
+    a._tok = a._nt.split(" ").filter(w => w.length > 2);
+  });
+  articles.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+  const kept = [];
+  const dupeCount = { url: 0, exact: 0, dice: 0, jaccard: 0, substring: 0 };
+  for (const art of articles) {
+    let dup = false;
+    for (const k of kept) {
+      const r = areDuplicates(k, art, thr);
+      if (r) { dupeCount[r]++; k.dupeCount = (k.dupeCount || 0) + 1; dup = true; break; }
+    }
+    if (!dup) kept.push(art);
+  }
+  return { kept, dupeCount };
+}
+
+/* ============================================================
+   STATE & SORTING
+   ============================================================ */
+let allArticles = [];
+let currentFilter = "all";
+let autoRefreshTimer = null;
+let sortDirection = "desc";
+let isLoading = false;
+
+function sortArticles(list) {
+  const field = document.getElementById("sortField").value;
+  const dir = sortDirection === "asc" ? 1 : -1;
+  const rank = { bull: 0, sideways: 1, neutral: 2, bear: 3 };
+  const byNewest = (a, b) => (b._ts || 0) - (a._ts || 0);
+  return [...list].sort((a, b) => {
+    switch (field) {
+      case "date": return ((a._ts || 0) - (b._ts || 0)) * dir;
+      case "source": return (a.source.toLowerCase().localeCompare(b.source.toLowerCase()) * dir) || byNewest(a, b);
+      case "sentiment": { const d = ((rank[a.sentiment] ?? 9) - (rank[b.sentiment] ?? 9)) * dir; return d || byNewest(a, b); }
+      case "title": return (a.title.toLowerCase().localeCompare(b.title.toLowerCase()) * dir) || byNewest(a, b);
+      default: return byNewest(a, b);
+    }
+  });
+}
+function syncNewestBtn() {
+  const isNewest = sortDirection === "desc" && document.getElementById("sortField").value === "date";
+  document.getElementById("newestBtn").classList.toggle("active", isNewest);
+}
+function setNewestFirst() {
+  document.getElementById("sortField").value = "date";
+  sortDirection = "desc";
+  updateDirectionUI(); render(); syncNewestBtn();
+}
+function toggleDirection() {
+  sortDirection = sortDirection === "asc" ? "desc" : "asc";
+  updateDirectionUI(); render(); syncNewestBtn();
+}
+function onSortChange() { updateDirectionUI(); render(); syncNewestBtn(); }
+function updateDirectionUI() {
+  const field = document.getElementById("sortField").value;
+  const asc = sortDirection === "asc";
+  const dateLike = field === "date";
+  document.getElementById("dirArrow").textContent = asc ? "↑" : "↓";
+  document.getElementById("dirLabel").textContent = dateLike ? (asc ? "Oldest first" : "Newest first") : (asc ? "Ascending" : "Descending");
+  const sum = document.getElementById("dirSummary");
+  sum.textContent = (asc ? "ASC" : "DESC") + (dateLike ? (asc ? " · OLDEST" : " · NEWEST") : "");
+  sum.style.color = asc ? "var(--bear)" : "var(--bull)";
+}
+
+/* ============================================================
+   LOAD ALL NEWS
+   ============================================================ */
+async function loadAll() {
+  if (isLoading) return;
+  isLoading = true;
+  const $ = id => document.getElementById(id);
+  const loading = $("loading"), refreshBtn = $("refreshBtn");
+  $("newsGrid").innerHTML = "";
+  $("empty").style.display = "none";
+  $("errorBox").innerHTML = "";
+  $("noticeBox").innerHTML = "";
+  loading.style.display = "block";
+  refreshBtn.disabled = true;
+  $("statusText").textContent = "Loading news...";
+  $("statusDot").classList.remove("err");
+
+  const s = getSettings();
+  const feeds = getFeeds();
+  const raw = [], failed = [];
+  let done = 0;
+  $("loadingText").textContent = `Fetching 0/${feeds.length} feeds...`;
+
+  await Promise.all(feeds.map(async f => {
+    const items = await fetchFeed(f, s.corsProxy);
+    done++;
+    $("loadingText").textContent = `Fetching ${done}/${feeds.length} feeds...`;
+    if (items) raw.push(...items); else failed.push(f.name);
+  }));
+
+  const valid = raw.filter(a => a.title && a.link !== "#");
+  const { kept, dupeCount } = deduplicate(valid, s.dupeThreshold);
+
+  loading.style.display = "none";
+  refreshBtn.disabled = false;
+  isLoading = false;
+
+  if (!kept.length) {
+    $("stats").style.display = "none";
+    $("errorBox").innerHTML = `<div class="error">⚠️ No articles fetched. All feeds are currently unreachable — check your connection or the CORS proxy setting, then press Refresh.</div>`;
+    $("statusText").textContent = "No data";
+    $("statusDot").classList.add("err");
+    return;
+  }
+
+  const totalDupes = Object.values(dupeCount).reduce((a, b) => a + b, 0);
+  const newestTs = Math.max(...kept.map(a => a._ts || 0));
+  const newestStr = newestTs ? new Date(newestTs).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+  $("stats").style.display = "flex";
+  $("stats").innerHTML = `
+    <span>Articles: <strong>${kept.length}</strong></span>
+    <span class="newest-info">🕐 Newest: ${newestStr}</span>
+    <span>Duplicates removed: <strong>${totalDupes}</strong></span>
+    <span>Sources: <strong>${new Set(kept.map(a => a.source)).size}</strong></span>`;
+  if (failed.length) {
+    $("noticeBox").innerHTML = `<div class="notice">ℹ️ ${failed.length} source(s) unavailable: ${escapeHTML(failed.slice(0, 6).join(", "))}${failed.length > 6 ? ` (+${failed.length - 6} more)` : ""}.</div>`;
+  }
+  allArticles = kept;
+  $("statusText").textContent = `${kept.length} articles • ${new Date().toLocaleTimeString()}`;
+  render();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function escapeHTML(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function render() {
+  const grid = document.getElementById("newsGrid");
+  const empty = document.getElementById("empty");
+  let list = currentFilter === "all" ? allArticles : allArticles.filter(a => a.metals.includes(currentFilter));
+  list = sortArticles(list);
+  grid.innerHTML = "";
+  if (!list.length) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  const now = Date.now();
+  const frag = document.createDocumentFragment();
+  list.forEach(a => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const ts = a._ts || 0;
+    if (ts && now - ts < 2 * 3600 * 1000) card.classList.add("fresh");
+
+    let time = "—", relative = "date unknown";
+    if (ts) {
+      time = new Date(ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      const m = Math.floor((now - ts) / 60000);
+      relative = m < 1 ? "just now" : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m / 60)}h ago` : `${Math.floor(m / 1440)}d ago`;
+    }
+    const metalTags = a.metals.map(m => `<span class="badge ${m === "copper" ? "copper" : m === "oil" ? "oil" : "metal"}">${m}</span>`).join(" ");
+    const dupeTag = a.dupeCount ? `<span class="badge dupe" title="Similar articles merged">+${a.dupeCount}</span>` : "";
+    card.innerHTML = `
+      <div class="source">${escapeHTML(a.source)}<span class="source-badge">${escapeHTML(a.cat)}</span></div>
+      <h3><a href="${escapeHTML(a.link)}" target="_blank" rel="noopener noreferrer">${escapeHTML(a.title)}</a>${dupeTag}</h3>
+      <p>${escapeHTML(a.description || "No description available.")}</p>
+      <div class="meta">
+        <span class="time">${relative} · ${time}</span>
+        <span><span class="badge ${a.sentiment}">${a.sentiment}</span> ${metalTags}</span>
+      </div>`;
+    frag.appendChild(card);
+  });
+  grid.appendChild(frag);
+}
+
+/* ============================================================
+   EXPORT / AUTO-REFRESH
+   ============================================================ */
+function exportJSON() {
+  if (!allArticles.length) { toast("Nothing to export yet"); return; }
+  const out = sortArticles(allArticles).map(({ _normURL, _nt, _tok, ...rest }) => rest);
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `metals-news-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function setupAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = null;
+  const min = getSettings().refreshMin || 0;
+  if (min > 0) autoRefreshTimer = setInterval(() => { if (!document.hidden) loadAll(); }, min * 60 * 1000);
+}
+
+/* ============================================================
+   EVENTS & INIT
+   ============================================================ */
+document.getElementById("tabs").addEventListener("click", e => {
+  const tab = e.target.closest(".tab");
+  if (!tab) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  tab.classList.add("active");
+  currentFilter = tab.dataset.filter;
+  render();
+});
+
+applyTheme(store.get("metalsNewsTheme") || "light");
+loadSettings();
+if (store.get(PANEL_STATE_KEY) === "1") toggleSettings();
+updateDirectionUI();
+renderSourcePreview();
+setupAutoRefresh();
+switchView(store.get("metalsNewsView") === "calendar" ? "calendar" : "news");
+loadAll();
+</script>
+</body>
+</html>
